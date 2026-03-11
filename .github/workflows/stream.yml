@@ -1,0 +1,24 @@
+name: YouTube Stream
+
+on:
+  workflow_dispatch: # allows manual start
+  schedule:
+    - cron: '0 */6 * * *' # auto-run every 6 hours
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install FFmpeg
+        run: sudo apt update && sudo apt install -y ffmpeg
+
+      - name: Start Stream
+        run: |
+          ffmpeg -re -stream_loop -1 -i "Color With Me!.mp4" \
+          -c:v libx264 -preset veryfast -b:v 4000k -maxrate 4000k -bufsize 8000k \
+          -c:a aac -b:a 128k -ar 44100 \
+          -pix_fmt yuv420p -g 60 \
+          -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.STREAM_KEY }}
