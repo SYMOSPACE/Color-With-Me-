@@ -11,13 +11,18 @@ jobs:
     timeout-minutes: 350
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository with LFS
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Install FFmpeg
         run: |
           sudo apt update
           sudo apt install -y ffmpeg
+
+      - name: Verify video file
+        run: ls -lh
 
       - name: Start YouTube Stream
         run: |
