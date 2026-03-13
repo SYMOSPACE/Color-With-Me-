@@ -14,6 +14,11 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
+    - name: Show repository files
+      run: |
+        pwd
+        ls -lh
+
     - name: Install FFmpeg
       run: |
         sudo apt update
@@ -21,7 +26,7 @@ jobs:
 
     - name: Start livestream
       run: |
-        ffmpeg -re -stream_loop -1 -i color_with_me2.mp4 \
+        ffmpeg -loglevel verbose -re -stream_loop -1 -i "./color_with_me2.mp4" \
         -vf "scale=1280:720,fps=30,setpts=1.15*PTS" \
         -c:v libx264 -preset veryfast -b:v 3000k \
         -c:a aac -b:a 128k \
