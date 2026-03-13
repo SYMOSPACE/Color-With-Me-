@@ -1,0 +1,29 @@
+name: YouTube 6 Hour Stream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install FFmpeg
+      run: |
+        sudo apt update
+        sudo apt install -y ffmpeg
+
+    - name: Start livestream
+      run: |
+        ffmpeg -re -stream_loop -1 -i "color with me2.mp4" \
+        -vf "scale=1280:720,fps=30,setpts=1.15*PTS" \
+        -c:v libx264 -preset veryfast -b:v 3000k \
+        -c:a aac -b:a 128k \
+        -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}
