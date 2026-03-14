@@ -1,35 +1,39 @@
-name: 24-7 YouTube Stream
+name: YouTube 6 Hour Stream
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */5 * * *'
+    - cron: "0 */6 * * *"
 
 jobs:
   stream:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 360
 
     steps:
-      - name: Checkout repository with LFS
-        uses: actions/checkout@v4
-        with:
-          lfs: true
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        lfs: true
 
-      - name: Install FFmpeg
-        run: |
-          sudo apt update
-          sudo apt install -y ffmpeg
+    - name: Show repository files
+      run: |
+        ls -lh
 
-      - name: Verify video file
-        run: ls -lh
+    - name: Install FFmpeg
+      run: |
+        sudo apt update
+        sudo apt install -y ffmpeg
 
-      - name: Start YouTube Stream
-        run: |
-          ffmpeg -re -stream_loop -1 -i "Color With Me!.mp4" \
-          -c:v libx264 -preset veryfast \
-          -b:v 3500k -maxrate 3500k -bufsize 7000k \
-          -pix_fmt yuv420p \
-          -g 60 \
-          -c:a aac -b:a 128k -ar 44100 \
-          -f flv rtmp://a.rtmp.youtube.com/live2/${{ secrets.STREAM_KEY }}
+    - name: Start livestream
+      env:
+        STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+      run: |
+        ffmpeg -re -stream_loop -1 -i "./color_with_me2.mp4" \
+        -vf "scale=1280:720,fps=30,setpts=1.15*PTS" \
+        -c:v libx264 -preset veryfast -b:v 3000k -maxrate 3000k -bufsize 6000k -g 60 \
+        -c:a aac -b:a 128k -ar 44100 \
+        -f flv "rtmp://a.rtmp.youtube.com/live2/$STREAM_KEY" \
+        -c:v libx264 -preset veryfast -b:v 1500k -maxrate 1500k -bufsize 3000k -g 60 \
+        -c:a aac -b:a 96k -ar 44100 \
+        -f flv "rtmp://a.rtmp.youtube.com/live2/$STREAM_KEY"
